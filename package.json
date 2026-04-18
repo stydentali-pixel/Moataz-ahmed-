@@ -1,0 +1,36 @@
+{
+  "name": "smart-telegram-agent",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Smart Telegram Agent with roles, channels, reliable publishing and Makkah scheduling",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "db:reset": "prisma db push --force-reset",
+    "typecheck": "tsc --noEmit",
+    "setup": "npm install && npm run prisma:generate && npm run prisma:push"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "bullmq": "^5.47.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.11",
+    "prisma": "^6.6.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

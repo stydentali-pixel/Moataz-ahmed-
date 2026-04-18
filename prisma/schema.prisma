@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum PublishPlatform {
+  TELEGRAM
+  FACEBOOK
+}
+
+enum PublishStatus {
+  QUEUED
+  SCHEDULED
+  PUBLISHED
+  FAILED
+  CANCELED
+}
+
+model User {
+  id         String   @id @default(cuid())
+  telegramId String   @unique
+  username   String?
+  firstName  String?
+  lastName   String?
+  role       UserRole @default(VIEWER)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  jobs PublishJob[]
+}
+
+model Channel {
+  id             String   @id @default(cuid())
+  telegramChatId String?
+  username       String?  @unique
+  title          String
+  isActive       Boolean  @default(true)
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  jobs PublishJob[]
+
+  @@index([telegramChatId])
+}
+
+model FacebookPage {
+  id          String   @id @default(cuid())
+  pageId      String   @unique
+  pageName    String
+  accessToken String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jobs PublishJob[]
+}
+
+model PublishJob {
+  id             String          @id @default(cuid())
+  platform       PublishPlatform
+  status         PublishStatus
+  content        String
+  scheduledFor   DateTime?
+  publishedAt    DateTime?
+  externalPostId String?
+  errorMessage   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  userId         String
+  channelId      String?
+  facebookPageId String?
+
+  user         User          @relation(fields: [userId], references: [id])
+  channel      Channel?      @relation(fields: [channelId], references: [id])
+  facebookPage FacebookPage? @relation(fields: [facebookPageId], references: [id])
+
+  @@index([status])
+  @@index([scheduledFor])
+}
