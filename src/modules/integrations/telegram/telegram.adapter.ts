@@ -1,37 +1,44 @@
-import { Telegram } from 'telegraf'
-import { env } from '../../../config/env'
-import { logger } from '../../../config/logger'
+import { Telegram } from "telegraf";
+import { env } from "../../../config/env";
 
 export class TelegramAdapter {
-  private telegram = new Telegram(env.BOT_TOKEN)
+  private telegram = new Telegram(env.BOT_TOKEN);
 
   async validateChannelAccess(target: string) {
     try {
-      await this.telegram.getChat(target)
-      return true
+      const chat = await this.telegram.getChat(target);
+      if (!chat) {
+        throw new Error("Channel not found");
+      }
+      return true;
     } catch {
-      throw new Error(`Cannot access channel: ${target}. تأكد أن البوت أدمن في القناة.`)
+      throw new Error(`Cannot access channel: ${target}`);
     }
   }
 
   async publishText(target: string, content: string) {
-    if (!content.trim()) throw new Error('Content cannot be empty')
+    if (!content.trim()) {
+      throw new Error("Content cannot be empty");
+    }
+
     try {
       return await this.telegram.sendMessage(target, content, {
-        disable_web_page_preview: true
-      })
+        link_preview_options: {
+          is_disabled: true,
+        },
+      });
     } catch (error: any) {
-      throw new Error(`Telegram publish failed: ${error.message}`)
+      throw new Error(`Telegram publish failed: ${error.message}`);
     }
   }
 
-  async notifyUser(telegramId: string, text: string) {
-    try {
-      await this.telegram.sendMessage(telegramId, text, { disable_web_page_preview: true })
-    } catch (error) {
-      logger.warn('Failed to notify user', telegramId, error)
-    }
+  async notifyUser(userId: string | number, message: string) {
+    return this.telegram.sendMessage(userId, message, {
+      link_preview_options: {
+        is_disabled: true,
+      },
+    });
   }
 }
 
-export const telegramAdapter = new TelegramAdapter()
+export const telegramAdapter = new TelegramAdapter();
